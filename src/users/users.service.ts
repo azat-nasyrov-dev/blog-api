@@ -5,7 +5,7 @@ import { Repository } from 'typeorm';
 import { CreateUserDto } from './dto/create-user.dto';
 import { sign } from 'jsonwebtoken';
 import { JWT_SECRET } from '../config/jwt.config';
-import { UserResponseInterface } from './types/userResponse.interface';
+import { UserResponseInterface } from './types/user-response.interface';
 import {
   EMAIL_OR_USERNAME_TAKEN_ERROR,
   USER_CREDENTIALS_ERROR,
@@ -69,6 +69,10 @@ export class UsersService {
     delete user.password;
 
     return user;
+  }
+
+  public findUserById(id: number): Promise<UserEntity> {
+    return this.userRepository.findOne({ where: { id } });
   }
 
   public generateJwt(user: UserEntity): string {
