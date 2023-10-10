@@ -5,6 +5,7 @@ import { TypeOrmConfigService } from './config/typeorm.config';
 import { TagsModule } from './tags/tags.module';
 import { UsersModule } from './users/users.module';
 import { AuthMiddleware } from './users/middlewares/auth.middleware';
+import { ArticlesModule } from './articles/articles.module';
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import { AuthMiddleware } from './users/middlewares/auth.middleware';
     }),
     TagsModule,
     UsersModule,
+    ArticlesModule,
   ],
 })
 export class AppModule {
