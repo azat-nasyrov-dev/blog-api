@@ -1,11 +1,15 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ArticleEntity } from './entities/article.entity';
-import { Repository } from 'typeorm';
+import { DeleteResult, Repository } from 'typeorm';
 import { UserEntity } from '../users/entities/user.entity';
 import { CreateArticleDto } from './dto/create-article.dto';
 import { ArticleResponseInterface } from './types/article-response.interface';
 import slugify from 'slugify';
+import {
+  ARTICLE_DOES_NOT_EXIST_ERROR,
+  AUTHOR_FORBIDDEN_ERROR,
+} from './articles.constants';
 
 @Injectable()
 export class ArticlesService {
@@ -33,6 +37,26 @@ export class ArticlesService {
 
   public async findBySlug(slug: string): Promise<ArticleEntity> {
     return await this.articleRepository.findOne({ where: { slug } });
+  }
+
+  public async deleteArticle(
+    currentUserId: number,
+    slug: string,
+  ): Promise<DeleteResult> {
+    const article = await this.findBySlug(slug);
+
+    if (!article) {
+      throw new HttpException(
+        ARTICLE_DOES_NOT_EXIST_ERROR,
+        HttpStatus.NOT_FOUND,
+      );
+    }
+
+    if (article.author.id !== currentUserId) {
+      throw new HttpException(AUTHOR_FORBIDDEN_ERROR, HttpStatus.FORBIDDEN);
+    }
+
+    return await this.articleRepository.delete({ slug });
   }
 
   public buildArticleResponse(
