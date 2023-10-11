@@ -6,6 +6,7 @@ import {
   Param,
   Post,
   Put,
+  Query,
   UseGuards,
   UsePipes,
   ValidationPipe,
@@ -17,6 +18,7 @@ import { UserEntity } from '../users/entities/user.entity';
 import { CreateArticleDto } from './dto/create-article.dto';
 import { ArticleResponseInterface } from './types/article-response.interface';
 import { UpdateArticleDto } from './dto/update-article.dto';
+import { ArticlesResponseInterface } from './types/articles-response.interface';
 
 @Controller('articles')
 export class ArticlesController {
@@ -34,6 +36,14 @@ export class ArticlesController {
       createArticleDto,
     );
     return this.articlesService.buildArticleResponse(article);
+  }
+
+  @Get()
+  public async findAll(
+    @User('id') currentUserId: number,
+    @Query() query: any,
+  ): Promise<ArticlesResponseInterface> {
+    return await this.articlesService.findListOfArticles(currentUserId, query);
   }
 
   @Get(':slug')
