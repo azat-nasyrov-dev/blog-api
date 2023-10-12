@@ -6,10 +6,7 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { sign } from 'jsonwebtoken';
 import { JWT_SECRET } from '../config/jwt.config';
 import { UserResponseInterface } from './types/user-response.interface';
-import {
-  EMAIL_OR_USERNAME_TAKEN_ERROR,
-  USER_CREDENTIALS_ERROR,
-} from './users.constants';
+import { HAS_ALREADY_BEEN_TAKEN_ERROR } from './users.constants';
 import { LoginUserDto } from './dto/login-user.dto';
 import { compare } from 'bcrypt';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -22,6 +19,9 @@ export class UsersService {
   ) {}
 
   public async createUser(createUserDto: CreateUserDto): Promise<UserEntity> {
+    const errorResponse = {
+      errors: {},
+    };
     const userByEmail = await this.userRepository.findOne({
       where: { email: createUserDto.email },
     });
@@ -29,11 +29,16 @@ export class UsersService {
       where: { username: createUserDto.username },
     });
 
+    if (userByEmail) {
+      errorResponse.errors['email'] = HAS_ALREADY_BEEN_TAKEN_ERROR;
+    }
+
+    if (userByUsername) {
+      errorResponse.errors['username'] = HAS_ALREADY_BEEN_TAKEN_ERROR;
+    }
+
     if (userByEmail || userByUsername) {
-      throw new HttpException(
-        EMAIL_OR_USERNAME_TAKEN_ERROR,
-        HttpStatus.UNPROCESSABLE_ENTITY,
-      );
+      throw new HttpException(errorResponse, HttpStatus.UNPROCESSABLE_ENTITY);
     }
 
     const newUser = new UserEntity();
@@ -43,16 +48,18 @@ export class UsersService {
   }
 
   public async signin(loginUserDto: LoginUserDto): Promise<UserEntity> {
+    const errorResponse = {
+      errors: {
+        'email or password': 'is invalid',
+      },
+    };
     const user = await this.userRepository.findOne({
       where: { email: loginUserDto.email },
       select: ['id', 'username', 'email', 'bio', 'image', 'password'],
     });
 
     if (!user) {
-      throw new HttpException(
-        USER_CREDENTIALS_ERROR,
-        HttpStatus.UNPROCESSABLE_ENTITY,
-      );
+      throw new HttpException(errorResponse, HttpStatus.UNPROCESSABLE_ENTITY);
     }
 
     const isPasswordCorrect = await compare(
@@ -61,10 +68,7 @@ export class UsersService {
     );
 
     if (!isPasswordCorrect) {
-      throw new HttpException(
-        USER_CREDENTIALS_ERROR,
-        HttpStatus.UNPROCESSABLE_ENTITY,
-      );
+      throw new HttpException(errorResponse, HttpStatus.UNPROCESSABLE_ENTITY);
     }
 
     delete user.password;
