@@ -13,6 +13,7 @@ async function bootstrap() {
     .setVersion('1.0')
     .setBasePath('api')
     .addBearerAuth()
+    .addTag('Developed by Azat Nasyrov')
     .build();
   const document = SwaggerModule.createDocument(app, options);
   SwaggerModule.setup('/docs', app, document);
