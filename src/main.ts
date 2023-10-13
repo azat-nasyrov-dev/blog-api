@@ -16,7 +16,7 @@ async function bootstrap() {
     .addTag('Developed by Azat Nasyrov')
     .build();
   const document = SwaggerModule.createDocument(app, options);
-  SwaggerModule.setup('/docs', app, document);
+  SwaggerModule.setup('/api/docs', app, document);
 
   await app.listen(port, () => console.log(`Server started on port: ${port}`));
 }
