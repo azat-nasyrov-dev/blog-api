@@ -32,5 +32,5 @@ $ npm run typeorm schema:drop
 ```
 
 ## Swagger project documentation
-- This link leads to the API documentation (http://localhost:3000/api/docs)
+- This link leads to the API documentation (http://localhost:5001/api/docs)
 
