@@ -9,6 +9,7 @@ import { UserResponseInterface } from './types/user-response.interface';
 import { EMAIL_OR_USERNAME_TAKEN_ERROR, USER_CREDENTIALS_ERROR } from './users.constants';
 import { LoginUserDto } from './dto/login.dto';
 import { compare } from 'bcrypt';
+import { UpdateUserDto } from './dto/update-user.dto';
 
 @Injectable()
 export class UsersService {
@@ -59,6 +60,13 @@ export class UsersService {
 
   public findUserById(id: number): Promise<UserEntity> {
     return this.userRepository.findOne({ where: { id } });
+  }
+
+  public async updateUserById(userId: number, updateUserDto: UpdateUserDto): Promise<UserEntity> {
+    const user = await this.findUserById(userId);
+    Object.assign(user, updateUserDto);
+
+    return await this.userRepository.save(user);
   }
 
   public generateJwt(user: UserEntity): string {
