@@ -4,6 +4,7 @@ import { ArticleEntity } from './entities/article.entity';
 import { Repository } from 'typeorm';
 import { UserEntity } from '../users/entities/user.entity';
 import { CreateArticleDto } from './dto/create-article.dto';
+import { ArticleResponseInterface } from './types/article-response.interface';
 
 @Injectable()
 export class ArticlesService {
@@ -27,5 +28,9 @@ export class ArticlesService {
 
     article.author = currentUser;
     return await this.articleRepository.save(article);
+  }
+
+  public buildArticleResponse(article: ArticleEntity): ArticleResponseInterface {
+    return { article };
   }
 }
