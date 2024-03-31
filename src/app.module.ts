@@ -6,6 +6,7 @@ import { TagsModule } from './tags/tags.module';
 import { UsersModule } from './users/users.module';
 import { AuthMiddleware } from './users/middlewares/auth.middleware';
 import { ArticlesModule } from './articles/articles.module';
+import { ProfilesModule } from './profiles/profiles.module';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { ArticlesModule } from './articles/articles.module';
     TagsModule,
     UsersModule,
     ArticlesModule,
+    ProfilesModule,
   ],
 })
 export class AppModule {
