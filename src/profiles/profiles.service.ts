@@ -28,7 +28,19 @@ export class ProfilesService {
       throw new HttpException(PROFILE_NOT_EXIST_ERROR, HttpStatus.NOT_FOUND);
     }
 
-    return { ...user, following: false };
+    let following = false;
+
+    if (currentUserId) {
+      const follow = await this.followRepository.findOne({
+        where: {
+          followerId: currentUserId,
+          followingId: user.id,
+        },
+      });
+      following = Boolean(follow);
+    }
+
+    return { ...user, following };
   }
 
   public async followProfileByUsername(
@@ -63,6 +75,30 @@ export class ProfilesService {
     }
 
     return { ...user, following: true };
+  }
+
+  public async unFollowProfileByUsername(
+    currentUserId: number,
+    profileUsername: string,
+  ): Promise<ProfileType> {
+    const user = await this.userRepository.findOne({
+      where: { username: profileUsername },
+    });
+
+    if (!user) {
+      throw new HttpException(PROFILE_NOT_EXIST_ERROR, HttpStatus.NOT_FOUND);
+    }
+
+    if (currentUserId === user.id) {
+      throw new HttpException(FOLLOWER_FOLLOWING_EQUALITY_ERROR, HttpStatus.BAD_REQUEST);
+    }
+
+    await this.followRepository.delete({
+      followerId: currentUserId,
+      followingId: user.id,
+    });
+
+    return { ...user, following: false };
   }
 
   public buildProfileResponse(profile: ProfileType): ProfileResponseInterface {
