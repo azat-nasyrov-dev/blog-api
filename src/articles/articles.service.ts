@@ -9,6 +9,7 @@ import slugify from 'slugify';
 import { ARTICLE_NOT_EXIST_ERROR, AUTHOR_FORBIDDEN_ERROR } from './articles.constants';
 import { UpdateArticleDto } from './dto/update-article.dto';
 import { ArticlesResponseInterface } from './types/articles-response.interface';
+import { FollowEntity } from '../profiles/entities/follow.entity';
 
 @Injectable()
 export class ArticlesService {
@@ -17,6 +18,8 @@ export class ArticlesService {
     private readonly articleRepository: Repository<ArticleEntity>,
     @InjectRepository(UserEntity)
     private readonly userRepository: Repository<UserEntity>,
+    @InjectRepository(FollowEntity)
+    private readonly followRepository: Repository<FollowEntity>,
     private dataSource: DataSource,
   ) {}
 
@@ -105,6 +108,42 @@ export class ArticlesService {
     });
 
     return { articles: articlesWithFavorites, articlesCount };
+  }
+
+  public async getFeedFromUser(
+    currentUserId: number,
+    query: any,
+  ): Promise<ArticlesResponseInterface> {
+    const follows = await this.followRepository.find({
+      where: { followerId: currentUserId },
+    });
+
+    if (follows.length === 0) {
+      return { articles: [], articlesCount: 0 };
+    }
+
+    const followingUserIds = follows.map((follow) => follow.followingId);
+    const queryBuilder = this.dataSource
+      .getRepository(ArticleEntity)
+      .createQueryBuilder('articles')
+      .leftJoinAndSelect('articles.author', 'author')
+      .where('articles.authorId IN (:...ids)', { ids: followingUserIds });
+
+    queryBuilder.orderBy('articles.createdAt', 'DESC');
+
+    const articlesCount = await queryBuilder.getCount();
+
+    if (query.limit) {
+      queryBuilder.limit(query.limit);
+    }
+
+    if (query.offset) {
+      queryBuilder.offset(query.offset);
+    }
+
+    const articles = await queryBuilder.getMany();
+
+    return { articles, articlesCount };
   }
 
   public async findBySlug(slug: string): Promise<ArticleEntity> {

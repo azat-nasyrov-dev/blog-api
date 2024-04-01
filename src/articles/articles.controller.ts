@@ -44,6 +44,15 @@ export class ArticlesController {
     return await this.articlesService.findListOfArticles(currentUserId, query);
   }
 
+  @Get('feed')
+  @UseGuards(AuthGuard)
+  public async getFeed(
+    @User('id') currentUserId: number,
+    @Query() query: any,
+  ): Promise<ArticlesResponseInterface> {
+    return await this.articlesService.getFeedFromUser(currentUserId, query);
+  }
+
   @Get(':slug')
   public async getSingleArticle(@Param('slug') slug: string): Promise<ArticleResponseInterface> {
     const article = await this.articlesService.findBySlug(slug);
