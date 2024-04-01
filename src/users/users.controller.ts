@@ -8,11 +8,19 @@ import { UserEntity } from './entities/user.entity';
 import { AuthGuard } from './guards/auth.guard';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { BackendValidationPipe } from '../shared/pipes/backend-validation.pipe';
+import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 
+@ApiBearerAuth()
+@ApiTags('Users')
 @Controller()
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
+  @ApiOperation({ summary: 'Create users' })
+  @ApiResponse({
+    status: 201,
+    description: 'The user has been successfully created',
+  })
   @Post('users')
   @UsePipes(new BackendValidationPipe())
   public async create(@Body('user') createUserDto: CreateUserDto): Promise<UserResponseInterface> {
@@ -20,6 +28,11 @@ export class UsersController {
     return this.usersService.buildUserResponse(user);
   }
 
+  @ApiOperation({ summary: 'User login' })
+  @ApiResponse({
+    status: 200,
+    description: 'The user has been successfully signin',
+  })
   @Post('users/login')
   @UsePipes(new BackendValidationPipe())
   @HttpCode(200)
@@ -28,12 +41,19 @@ export class UsersController {
     return this.usersService.buildUserResponse(user);
   }
 
+  @ApiOperation({ summary: 'Get the current user' })
+  @ApiResponse({ status: 200, description: 'Return the current user' })
   @Get('user')
   @UseGuards(AuthGuard)
   public async getCurrentUser(@User() user: UserEntity): Promise<UserResponseInterface> {
     return this.usersService.buildUserResponse(user);
   }
 
+  @ApiOperation({ summary: 'Update user' })
+  @ApiResponse({
+    status: 200,
+    description: 'The user has been successfully updated',
+  })
   @Put('user')
   @UseGuards(AuthGuard)
   @UsePipes(new BackendValidationPipe())
